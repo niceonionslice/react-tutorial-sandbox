@@ -5,19 +5,28 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      history: [
+        {
+          squares: Array(9).fill(null)
+        }
+      ],
+      stepNumber: 0,
       xIsNext: true,
-      squares: Array(9).fill(null),
     }
   }
 
   handleClick(i) {
-    const squares = this.state.squares.slice();
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const squares = history[history.length - 1].squares.slice();
     if(this.calculateWinner(squares) || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? "X" : "O";
     this.setState({
-      squares: squares,
+      history: history.concat([
+        { squares: squares }
+      ]),
+      stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
     })
   }
@@ -43,8 +52,8 @@ class Game extends React.Component {
     return null;
   }
 
-  getStatus(){
-    const winner = this.calculateWinner(this.state.squares);
+  getStatus(squares){
+    const winner = this.calculateWinner(squares);
     let status;
     if (winner) {
       status = "Winner: " + winner;
@@ -54,15 +63,43 @@ class Game extends React.Component {
     return status;
   }
 
+  // history.mapには何が格納されている？
+  // mapは実は３つの引数を取得することが可能（配列の値、配列のインデックス、現在処理中の配列）
+  getMoves(history) {
+    const moves = history.map((step, move) => {
+      console.log(step);
+      console.log(move);
+      const desc = move ?
+        'Go to move #' + move :
+          'Go to game start';
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    });
+    return moves
+  }
+
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0
+    });
+  }
+
   render() {
+    const history = this.state.history;
+    const squares = history[this.state.stepNumber].squares;
+
     return (
       <div className='game'>
         <div className='game-board'>
-          <Board squares={this.state.squares} onClick={i => this.handleClick(i)}/>
+          <Board squares={squares} onClick={i => this.handleClick(i)}/>
         </ div>
         <div className='game-info'>
-          <div>{this.getStatus()}</ div>
-          <ol>{/* TODO */}</ ol>
+          <div>{this.getStatus(squares)}</ div>
+          <ol>{this.getMoves(history)}</ ol>
         </ div>
       </ div>
     );
