@@ -5,11 +5,12 @@ import Square from './Square';
 class Board extends React.Component {
 
   renderSquare(i) {
-    return <Square value={i} />;
+    return <Square value={i} onClick = {() => this.props.onClick()}/>;
   }
 
   render() {
-    const status = 'Next plaer: X';
+    const nextPlayer = this.props.nextplaer ? 'X' : 'O';
+    const status = 'Next plaer: ' + nextPlayer;
 
     return (
       <div>
